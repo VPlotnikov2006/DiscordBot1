@@ -1,9 +1,7 @@
 from typing import Any
 import discord
-import pandas as pd
 from discord.ext import commands
 from dotenv import dotenv_values
-from re import fullmatch
 
 
 class MyClient(commands.Bot):
@@ -24,7 +22,7 @@ class MyClient(commands.Bot):
             await message.delete()
             print(f'Last {limit} messages in {message.channel.guild}/{message.channel}')
             async for msg in client.get_partial_messageable(message.channel.id).history(limit=limit):
-                print(msg.content)
+                print(f'{msg.created_at:%Y-%m-%d %H:%M:%S}/{msg.author}: {msg.content}')
 
     async def on_ready(self):
         print(f'Logged on as {self.user}!')
