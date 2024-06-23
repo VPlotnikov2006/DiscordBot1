@@ -1,8 +1,15 @@
+from typing import Any
 import discord
 from dotenv import dotenv_values
 
 
 class MyClient(discord.Client):
+    def __init__(self, **options: Any) -> None:
+        intents = discord.Intents.default()
+        intents.message_content = True
+
+        super().__init__(intents=intents, **options)
+
     async def on_ready(self):
         print(f'Logged on as {self.user}!')
         await self.change_presence(status=discord.Status.invisible)
@@ -14,8 +21,6 @@ class MyClient(discord.Client):
 
 if __name__ == "__main__":
     config = dotenv_values('.env')
-    intents = discord.Intents.default()
-    intents.message_content = True
-
-    client = MyClient(intents=intents)
+    
+    client = MyClient()
     client.run(config['API_TOKEN'])
