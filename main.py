@@ -9,7 +9,7 @@ class MyClient(discord.Client):
     
     async def on_message(self, message: discord.Message):
         if message.author.id != self.user.id:
-            await message.reply(message.content)
+            await message.channel.send(f"{message.author.global_name} said '{message.content}'")
 
 
 if __name__ == "__main__":
