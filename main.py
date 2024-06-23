@@ -8,7 +8,8 @@ class MyClient(discord.Client):
         await self.change_presence(status=discord.Status.invisible)
     
     async def on_message(self, message: discord.Message):
-        print(message.content)
+        if message.author.id != self.user.id:
+            await message.reply(message.content)
 
 
 if __name__ == "__main__":
