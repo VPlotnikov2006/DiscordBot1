@@ -20,6 +20,19 @@ ds_logger.addHandler(ds_file_handler)
 ds_logger.addHandler(ds_stream_handler)
 ds_logger.setLevel(logging.DEBUG)
 
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+stream_handler.setLevel(logging.INFO)
+
+file_handler = logging.FileHandler('main.log', 'w', encoding='utf-8')
+file_handler.setFormatter(formatter)
+file_handler.setLevel(logging.DEBUG)
+
+logger = logging.getLogger(__name__)
+logger.addHandler(stream_handler)
+logger.addHandler(file_handler)
+logger.setLevel(logging.DEBUG)
+
 
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
