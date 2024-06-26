@@ -37,33 +37,33 @@ class MyClient(commands.Bot):
         intents.guild_messages = True
         intents.guilds = True
 
-        self.selected_messages = []
+        self.selected_messages = set()
 
         super().__init__(command_prefix='!', intents=intents, **options)
 
         @self.command(name='select')
-        async def select(ctx: commands.Context, *, config: SelectionConverter = {'limit': 10,'pattern': r'.*','use_reactions': False,'append': True}):
+        async def select(ctx: commands.Context, *, config: SelectionConverter = {'limit': 10,'pattern': r'.*','use_reactions': False,'append': False}):
             print(config)
             print('Storage: ')
             print_messages(self.selected_messages)
             message = ctx.message
             await message.delete()
             messages = ctx.history(limit=None)
-            msg_list = []
+            msg_set = set()
             async for msg in messages:
                 if fullmatch(config['pattern'], msg.content):
-                    msg_list.append(msg)
-                if len(msg_list) == config['limit']: 
+                    msg_set.add(msg)
+                if len(msg_set) == config['limit']: 
                     break
             
             
             print(f'Last {config['limit']} messages in {message.channel.guild}/{message.channel} requiring {config['pattern']}')
-            print_messages(msg_list)
+            print_messages(msg_set)
             
             if config['append']:
-                self.selected_messages += msg_list
+                self.selected_messages.union(msg_set)
             else:
-                self.selected_messages = msg_list
+                self.selected_messages = msg_set
             
             
 
