@@ -70,7 +70,7 @@ class MyClient(commands.Bot):
             
 
             if config['append']:
-                self.selected_messages.union(msg_set)
+                self.selected_messages.update(msg_set)
             else:
                 self.selected_messages = msg_set
             
