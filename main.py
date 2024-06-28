@@ -64,7 +64,10 @@ class MyClient(commands.Bot):
             async for msg in messages:
                 if fullmatch(config['pattern'], msg.content):
                     logger.info('Selected: %s', message_to_string(msg))
+                    if config['use_reactions']:
+                        await msg.add_reaction('✅')
                     msg_set.add(msg)
+
                 if len(msg_set) == config['limit']: 
                     break
             
