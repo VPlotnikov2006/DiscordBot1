@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import json
 import logging.config
 from typing import Any
@@ -20,22 +21,36 @@ def message_to_string(msg):
 def messages_to_string(messages, *, sep='\n'):
     return sep.join(map(message_to_string, messages))
 
+@dataclass
+class SelectionConfig:
+    limit: int = 10
+    pattern: str = r'.*'
+    use_reactions: bool = False
+    append: bool = False
+    instant_delete: bool = False
+
 class SelectionConverter(commands.Converter):
-    async def convert(self, ctx, arg: str):
-        base_dict = {
-            'limit': 10,
-            'pattern': r'.*',
-            'use_reactions': False,
-            'append': False,
-        }
+    async def convert(self, ctx, arg: str) -> SelectionConfig:
+        config = SelectionConfig()
 
         for key, value in map(lambda x: x.split('='), arg.split()):
-            base_dict[key] = value
-        
-        base_dict['limit'] = int(base_dict['limit'])
-        base_dict['append'] = base_dict['append'] in (True, 'True')
-        base_dict['use_reactions'] = base_dict['use_reactions'] in (True, 'True')
-        return base_dict
+            match key:
+                case 'limit':
+                    config.limit = int(value)
+                case 'pattern':
+                    if value[0] == value[-1] and value[0] in ('\'', '\"'):
+                        config.pattern = value[1:-1]
+                    else:
+                        config.pattern = value
+                case 'append':
+                    config.append = value.lower() == 'true'
+                case 'use_reactions':
+                    config.use_reactions = value.lower() == 'true'
+                case 'instant_delete':
+                    config.instant_delete = value.lower() == 'true'
+                case _:
+                    logger.warning('Wrong key/value pair: (%s, %s)', key, value)
+        return config
 
 
 class MyClient(commands.Bot):
@@ -54,7 +69,7 @@ class MyClient(commands.Bot):
         super().__init__(command_prefix='!', intents=intents, **options)
 
         @self.command(name='select')
-        async def select(ctx: commands.Context, *, config: SelectionConverter = {'limit': 10,'pattern': r'.*','use_reactions': False,'append': False}):
+        async def select(ctx: commands.Context, *, config: SelectionConverter = SelectionConfig()):
             logger.debug('Selecting with config: %s', config)
             message = ctx.message
             logger.info('Selecting from: %s/%s', message.channel.guild, message.channel)
@@ -62,17 +77,17 @@ class MyClient(commands.Bot):
             messages = ctx.history(limit=None)
             msg_set = set()
             async for msg in messages:
-                if fullmatch(config['pattern'], msg.content):
+                if fullmatch(config.pattern, msg.content):
                     logger.info('Selected: %s', message_to_string(msg))
-                    if config['use_reactions']:
+                    if config.use_reactions:
                         await msg.add_reaction('✅')
                     msg_set.add(msg)
 
-                if len(msg_set) == config['limit']: 
+                if len(msg_set) == config.limit: 
                     break
             
 
-            if config['append']:
+            if config.append:
                 self.selected_messages.update(msg_set)
             else:
                 self.selected_messages = msg_set
