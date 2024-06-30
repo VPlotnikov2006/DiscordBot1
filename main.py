@@ -24,7 +24,7 @@ def messages_to_string(messages, *, sep='\n'):
 @dataclass
 class SelectionConfig:
     limit: int = 10
-    pattern: str = r'.*'
+    pattern: str = r'(.|\s)*'
     use_reactions: bool = False
     append: bool = False
     delete: bool = False
