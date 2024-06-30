@@ -27,7 +27,7 @@ class SelectionConfig:
     pattern: str = r'.*'
     use_reactions: bool = False
     append: bool = False
-    instant_delete: bool = False
+    delete: bool = False
 
 class SelectionConverter(commands.Converter):
     async def convert(self, ctx, arg: str) -> SelectionConfig:
@@ -46,8 +46,8 @@ class SelectionConverter(commands.Converter):
                     config.append = value.lower() == 'true'
                 case 'use_reactions':
                     config.use_reactions = value.lower() == 'true'
-                case 'instant_delete':
-                    config.instant_delete = value.lower() == 'true'
+                case 'delete':
+                    config.delete = value.lower() == 'true'
                 case _:
                     logger.warning('Wrong key/value pair: (%s, %s)', key, value)
         return config
@@ -81,16 +81,21 @@ class MyClient(commands.Bot):
                     logger.info('Selected: %s', message_to_string(msg))
                     if config.use_reactions:
                         await msg.add_reaction('✅')
+                    if config.delete:
+                        logger.info('Deleted: %s', message_to_string(msg))
+                        if msg in self.selected_messages:
+                            self.selected_messages.remove(msg)
+                        await msg.delete()
                     msg_set.add(msg)
 
                 if len(msg_set) == config.limit: 
                     break
             
-
-            if config.append:
-                self.selected_messages.update(msg_set)
-            else:
-                self.selected_messages = msg_set
+            if not config.delete:
+                if config.append:
+                    self.selected_messages.update(msg_set)
+                else:
+                    self.selected_messages = msg_set
             
             logger.debug('Storage: %s', messages_to_string(self.selected_messages, sep=' | '))
             
