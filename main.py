@@ -23,6 +23,16 @@ def message_to_string(msg):
 def messages_to_string(messages, *, sep='\n'):
     return sep.join(map(message_to_string, messages))
 
+def parse_bool(s: str):
+    match s.lower():
+        case 'true':
+            return True
+        case 'false':
+            return False
+        case _:
+            logger.warning("Failed to parse boolean: %s", s)
+            return False
+
 @dataclass
 class SelectionConfig:
     limit: int = 10
@@ -44,11 +54,11 @@ class SelectionConverter(commands.Converter):
                     else:
                         config.pattern = value
                 case 'append':
-                    config.append = value.lower() == 'true'
+                    config.append = parse_bool(value)
                 case 'use_reactions':
-                    config.use_reactions = value.lower() == 'true'
+                    config.use_reactions = parse_bool(value)
                 case 'delete':
-                    config.delete = value.lower() == 'true'
+                    config.delete = parse_bool(value)
                 case _:
                     logger.warning('Wrong key/value pair: (%s, %s)', key, value)
         return config
