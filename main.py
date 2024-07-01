@@ -7,7 +7,7 @@ from discord.ext import commands
 from typing import Any
 from dataclasses import dataclass
 from dotenv import dotenv_values
-from re import fullmatch
+from re import fullmatch, match, search, findall
 
 
 with open ('logging_config.json') as fp:
@@ -34,8 +34,7 @@ class SelectionConfig:
 class SelectionConverter(commands.Converter):
     async def convert(self, ctx, arg: str) -> SelectionConfig:
         config = SelectionConfig()
-
-        for key, value in map(lambda x: x.split('='), arg.split()):
+        for key, value in findall(r'(\w+)=(\".+\"|\'.+\'|\w+)', arg):
             match key:
                 case 'limit':
                     config.limit = int(value)
