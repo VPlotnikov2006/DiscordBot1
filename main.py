@@ -1,12 +1,14 @@
-from dataclasses import dataclass
 import json
+import logging
 import logging.config
-from typing import Any
 import discord
+
 from discord.ext import commands
+from typing import Any
+from dataclasses import dataclass
 from dotenv import dotenv_values
 from re import fullmatch
-import logging
+
 
 with open ('logging_config.json') as fp:
     config = json.load(fp)
@@ -69,7 +71,11 @@ class MyClient(commands.Bot):
         super().__init__(command_prefix='!', intents=intents, **options)
 
         @self.command(name='select')
-        async def select(ctx: commands.Context, *, config: SelectionConverter = SelectionConfig()):
+        async def select(
+                ctx: commands.Context, 
+                *, 
+                config: SelectionConfig = commands.parameter(converter=SelectionConverter, default=SelectionConfig())
+            ):
             logger.debug('Selecting with config: %s', config)
             message = ctx.message
             logger.info('Selecting from: %s/%s', message.channel.guild, message.channel)
